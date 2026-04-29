@@ -1,0 +1,24 @@
+module tb_Processor();
+    reg clk, reset;
+    
+    PipelinedProcessor uut(clk, reset);
+
+    always #5 clk = ~clk;
+
+    initial begin
+        clk = 0; reset = 1; #10; reset = 0;
+        
+        // Initialize Memory: Op(4)|Dest(4)|Src1(4)|Src2(4)
+        uut.data_mem[10] = 16'h0064; // Data at addr 10 = 100
+        uut.inst_mem[0] = 16'h310A;  // LOAD R1, [10]
+        uut.inst_mem[1] = 16'h1215;  // ADD R2, R1, 5
+        uut.inst_mem[2] = 16'h2321;  // SUB R3, R2, 1
+        
+        #100; $finish;
+    end
+    
+    initial begin
+        $monitor("Time=%0t | PC=%d | WB_Dest=R%d | Result=%d", 
+                 $time, uut.pc, uut.ex_wb_dest, uut.ex_wb_result);
+    end
+endmodule
